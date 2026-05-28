@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROYECTO STAR WARS</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-orange-200">
+    <div class="container mx-auto p-6">
+        <div class="bg-amber-500 rounded-3xl p-6 shadow-xl">
+            <h1 class="text-4xl text-center font-bold mb-8">PELICULAS DE STAR WARS</h1>
+            <div class="text-center mb-6">
+                <button id="boton-anterior" class="bg-black text-white px-4 py-2 rounded">Anterior</button>
+                <span id="texto-pagina" class="mx-4 font-bold">Pagina 1</span>
+                <button id="boton-siguiente" class="bg-black text-white px-4 py-2 rounded">Siguiente</button>
+            </div>
+            <div id="lista-peliculas" class="grid grid-cols-3 gap-6"></div>
+        </div>
+    </div>
+    <script src="index.js"></script>
+</body>
+</html>
