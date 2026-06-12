@@ -1,73 +1,137 @@
-const listaPeliculas = document.getElementById("lista-peliculas");
+const listaPersonajes = document.getElementById("lista-personajes");
 const botonAnterior = document.getElementById("boton-anterior");
 const botonSiguiente = document.getElementById("boton-siguiente");
 const textoPagina = document.getElementById("texto-pagina");
 
-let peliculas = [];
+const seccionComparacion = document.getElementById("seccion-comparacion");
+const tablaCuerpo = document.getElementById("tabla-cuerpo");
+const nombreP1 = document.getElementById("nombre-p1");
+const nombreP2 = document.getElementById("nombre-p2");
+const botonLimpiar = document.getElementById("boton-limpiar");
+
+let personajes = [];
+let seleccionados = []; 
 let pagina = 1;
 let cantidad = 3;
 
-let imagenes = [
-    "https://m.media-amazon.com/images/I/51ETR+VhX8L._SY300_SX300_QL70_FMwebp_.jpg",
-    "https://images.cdn2.buscalibre.com/fit-in/360x360/03/b4/03b4b1225ba2e87573f5b172179a5a4a.jpg",
-    "https://static.wikia.nocookie.net/laordenjedi/images/1/19/Retornojediportada.jpg/revision/latest/scale-to-width-down/290?cb=20110219172041&path-prefix=es",
-    "https://tumbaabierta.com/wp-content/uploads/2012/02/tumbaabierta_star_wars_episodioI_3d_poster.jpg",
-    "https://m.media-amazon.com/images/I/41w0uUDccrL._SY445_SX342_QL70_FMwebp_.jpg",
-    "https://www.insomniacine.cl/wp-content/uploads/2025/04/SW_Ep3_20th_Anniversary_LAS.jpg"
-
-];
-
 const main = async () => {
-    const starResponse = await fetch("https://swapi.info/api/films");
-    const starData = await starResponse.json();
-
-    console.log("starData", starData);
-
-    peliculas = starData;
-
-    console.log("peliculas", peliculas);
-
-    mostrarPeliculas();
+    const respuesta = await fetch("https://swapi.info/api/people");
+    const datos = await respuesta.json();
+    
+    personajes = datos;
+    mostrarPersonajes();
 }
 
-const mostrarPeliculas = () => {
-    listaPeliculas.innerHTML = "";
+const mostrarPersonajes = () => {
+    listaPersonajes.innerHTML = "";
 
     let inicio = (pagina - 1) * cantidad;
     let fin = inicio + cantidad;
+    let listaFiltrada = personajes.slice(inicio, fin);
 
-    let lista = peliculas.slice(inicio, fin);
+    listaFiltrada.forEach((personaje) => {
+            let yaSeleccionado = seleccionados.includes(personaje);
 
-    lista.forEach((pelicula, index) => {
-        let numeroImagen = inicio + index;
+        let tarjeta = document.createElement("div");
+        tarjeta.className = "bg-white rounded-2xl shadow-md p-4 flex flex-col justify-between";
 
-        listaPeliculas.innerHTML += `
-            <div class="bg-white rounded-2xl shadow-md p-4">
-                <img src="${imagenes[numeroImagen]}" class="w-full h-80 object-cover rounded-xl">
-                <h2 class="mt-3 text-lg font-bold text-center">${pelicula.title}</h2>
-                <p>Episodio: ${pelicula.episode_id}</p>
-                <p>Director: ${pelicula.director}</p>
-                <p>Fecha: ${pelicula.release_date}</p>
+        tarjeta.innerHTML = `
+            <div>
+                <h2 class="text-xl font-bold text-center mb-2">${personaje.name}</h2>
+                <p class="mb-4 text-gray-600 text-center">Género: ${personaje.gender}</p>
             </div>
         `;
+
+        let boton = document.createElement("button");
+        boton.innerText = yaSeleccionado ? "✓ Seleccionado" : "Seleccionar para comparar";
+        boton.className = yaSeleccionado 
+            ? "bg-green-600 text-white px-4 py-2 rounded w-full font-bold" 
+            : "bg-black text-white px-4 py-2 rounded w-full";
+
+        boton.addEventListener("click", () => {
+            if (yaSeleccionado) {
+                let indice = seleccionados.indexOf(personaje);
+                seleccionados.splice(indice, 1);
+            } else {
+                if (seleccionados.length >= 2) {
+                    alert("Solo puedes seleccionar un máximo de 2 personajes.");
+                    return;
+                }
+                seleccionados.push(personaje);
+            }
+
+            mostrarPersonajes();
+            generarComparacion();
+        });
+
+        tarjeta.appendChild(boton);
+        listaPersonajes.appendChild(tarjeta);
     });
 
-    textoPagina.innerHTML = "Pagina " + pagina;
+    let totalPaginas = Math.ceil(personajes.length / cantidad);
+    textoPagina.innerHTML = "Pagina " + pagina + " de " + totalPaginas;
 }
 
-botonSiguiente.addEventListener("click", () => {
-    let totalPaginas = Math.ceil(peliculas.length / cantidad);
+const generarComparacion = () => {
+    if (seleccionados.length === 2) {
+        let p1 = seleccionados[0];
+        let p2 = seleccionados[1];
 
+        nombreP1.innerText = p1.name;
+        nombreP2.innerText = p2.name;
+
+        tablaCuerpo.innerHTML = `
+            <tr class="border-b border-gray-200">
+                <td class="p-3 font-bold bg-gray-50">Altura</td>
+                <td class="p-3 text-center">${p1.height} cm</td>
+                <td class="p-3 text-center">${p2.height} cm</td>
+            </tr>
+            <tr class="border-b border-gray-200">
+                <td class="p-3 font-bold bg-gray-50">Peso</td>
+                <td class="p-3 text-center">${p1.mass} kg</td>
+                <td class="p-3 text-center">${p2.mass} kg</td>
+            </tr>
+            <tr class="border-b border-gray-200">
+                <td class="p-3 font-bold bg-gray-50">Género</td>
+                <td class="p-3 text-center">${p1.gender}</td>
+                <td class="p-3 text-center">${p2.gender}</td>
+            </tr>
+            <tr class="border-b border-gray-200">
+                <td class="p-3 font-bold bg-gray-50">Color de cabello</td>
+                <td class="p-3 text-center">${p1.hair_color}</td>
+                <td class="p-3 text-center">${p2.hair_color}</td>
+            </tr>
+            <tr class="border-b border-gray-200">
+                <td class="p-3 font-bold bg-gray-50">Año de nacimiento</td>
+                <td class="p-3 text-center">${p1.birth_year}</td>
+                <td class="p-3 text-center">${p2.birth_year}</td>
+            </tr>
+        `;
+
+        seccionComparacion.classList.remove("hidden");
+    } else {
+        seccionComparacion.classList.add("hidden");
+    }
+}
+
+botonLimpiar.addEventListener("click", () => {
+    seleccionados = [];
+    mostrarPersonajes();
+    generarComparacion();
+});
+
+botonSiguiente.addEventListener("click", () => {
+    let totalPaginas = Math.ceil(personajes.length / cantidad);
     if (pagina < totalPaginas) {
         pagina++;
-        mostrarPeliculas();
+        mostrarPersonajes();
     }
 });
 
 botonAnterior.addEventListener("click", () => {
     if (pagina > 1) {
         pagina--;
-        mostrarPeliculas();
+        mostrarPersonajes();
     }
 });
 
